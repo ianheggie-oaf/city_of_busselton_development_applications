@@ -30,16 +30,19 @@ Install poppler-utils by running:
     Running pdftohtml to convert pdf to xml pages...
     Page-1
     ...
-    Page-5
+    Page-46
     Parsing XML document ...
     Processing page# 1
-    Header: Applications Lodged – 06/03/2026 – 12/03/2026
-    Group: Building Applications
-    Headings: Application Number, Description, Primary Property Address, Date Application Received
-    Saving BAU26/0104 - Lot 323 No 62 Hideaway Loop Vasse, WA
-    Saving BAU26/0105 - Lot 38 No 195 Marine Terrace Geographe, WA
+    Page header: Applications Lodged – 13/03/2026 – 19/03/2026
+    Group: Development Applications
+    Saving DA26/0185 - Lot 75 No 20 Old Mill Grove QUINDALUP  WA  6281
     ...
-    Finished! Processed 42 records.
+    Saving DA26/0195 - Lot 45 No 21 Carline Loop GEOGRAPHE  WA  6280
+    Processing page# 2
+    ...
+    Processing page# 17
+    Page header: Applications Lodged – 13/02/2026 – 19/02/2026
+    Finished! Processed 178 records.
 
 Execution time ~ 10 seconds
 
