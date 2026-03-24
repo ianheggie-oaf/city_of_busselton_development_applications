@@ -9,7 +9,7 @@ require "yaml"
 require "nokogiri"
 require "scraperwiki"
 
-require_relative 'lib/constants'
+require_relative "lib/constants"
 require_relative "lib/applications_lodged_page"
 require_relative "lib/pdf_document"
 require_relative "lib/pdf_page"
@@ -26,15 +26,13 @@ class Scraper
     date_scraped = Date.today.iso8601
     count = 0
     urls = ApplicationsLodgedPage.applications_lodged_pdfs
-
-    error_limit = 5
     earliest_date_of_interest = Date.today - 30
 
     urls.each do |url|
       previous_table_headings = nil
       puts "Retrieving #{url} ..."
       pdf_content = URI.open(url).read
-      puts "Parsing as a PdfDocument ..." if ENV['DEBUG']
+      puts "Parsing as a PdfDocument ..." if ENV["DEBUG"]
       pdf_doc = PdfDocument.new(pdf_content)
       page_no = 0
       previous_record = nil
@@ -43,7 +41,7 @@ class Scraper
         puts "Processing page# #{page_no}"
         pdf_page = PdfPage.new(page_entry, previous_table_headings)
         if pdf_page.lodged_upto_date < earliest_date_of_interest
-          if ENV['DEBUG']
+          if ENV["DEBUG"]
             puts "NOTE: Ignoring rest of document since #{pdf_page.lodged_upto_date} in page heading is <= 30 days ago (#{earliest_date_of_interest})"
           end
           return count
@@ -56,10 +54,12 @@ class Scraper
           address = data["Primary Property Address"]&.fetch(:text)
           raw_date = data["Date Application Received"].to_s.strip
           if council_reference&.match(/\A(\S+)\s+(\S.*)\z/)
-            council_reference, description = $1, "#{$2&.strip} #{description}".strip
+            council_reference = ::Regexp.last_match(1)
+            description = "#{::Regexp.last_match(2)&.strip} #{description}".strip
           end
-          if address&.match(%r{\A(.*) (#{Constants::DATE_PATTERN}.*)\z})
-            address, raw_date = $1, "#{$2} #{raw_date}".strip
+          if address&.match(/\A(.*) (#{Constants::DATE_PATTERN}.*)\z/)
+            address = ::Regexp.last_match(1)
+            raw_date = "#{::Regexp.last_match(2)} #{raw_date}".strip
           end
           date_received =
             if raw_date != ""
@@ -108,13 +108,11 @@ class Scraper
   def fix_record(record)
     address = record["address"].to_s
     description = record["description"].to_s
-    if address != "" && !address.match?(/\bWA(\s+\d{4})?\z/)
-      address = "#{address} WA"
-    end
+    address = "#{address} WA" if address != "" && !address.match?(/\bWA(\s+\d{4})?\z/)
     # This makes the location much more accurate on long roads
     if address =~ /\A(Lot \d+) No (\d+\s.*)\z/
-      address = $2
-      description = "#{$1}: #{description}".strip
+      address = ::Regexp.last_match(2)
+      description = "#{::Regexp.last_match(1)}: #{description}".strip
     end
     record["address"] = address
     record["description"] = description
@@ -122,11 +120,10 @@ class Scraper
 
   def save(record)
     fix_record(record)
-    puts "Saving #{record["council_reference"]} - #{record["address"]}"
+    puts "Saving #{record['council_reference']} - #{record['address']}"
     ScraperWiki.save_sqlite(["council_reference"], record)
     puts "SAVED RECORD: #{record.to_yaml}" if ENV["DEBUG"]
   end
-
 end
 
 # Run the scraper whilst allowing this file to be required in tests without auto-execution

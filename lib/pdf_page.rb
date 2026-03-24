@@ -76,7 +76,8 @@ class PdfPage
       return true if DATA_TOP_RANGE.include?(top)
 
       if entry.text =~ %r{Applications Lodged\s.*\s([0-3]?\d)/([0-1]?\d)/(\d{4})}
-        @lodged_upto_date = Date.new($3.to_i, $2.to_i, $1.to_i)
+        @lodged_upto_date = Date.new(::Regexp.last_match(3).to_i, ::Regexp.last_match(2).to_i,
+                                     ::Regexp.last_match(1).to_i)
         @page_header = entry.text.strip
         puts "Page header: #{@page_header}"
       end
@@ -92,11 +93,11 @@ class PdfPage
     return unless bold?(text_node)
 
     text = text_node.text.strip
-    if KNOWN_GROUP_NAMES.any? { |name| text.start_with?(name) }
-      # Report but otherwise ignore
-      puts "Group: #{text}"
-      @enum.next
-    end
+    return unless KNOWN_GROUP_NAMES.any? { |name| text.start_with?(name) }
+
+    # Report but otherwise ignore
+    puts "Group: #{text}"
+    @enum.next
   end
 
   def skip_any_blank_entries
@@ -122,7 +123,7 @@ class PdfPage
     row_a.each do |entry|
       merge_heading(entry)
     end
-    if previous_table_headings != table_headings && ENV['DEBUG']
+    if previous_table_headings != table_headings && ENV["DEBUG"]
       puts "Found table headings at these #{previous_table_headings ? 'changed ' : ''}positions:"
       table_headings.each do |heading|
         puts format("  %4d  %s", heading[:left], heading[:text])
@@ -175,10 +176,10 @@ class PdfPage
     result = []
     loop do
       entry = begin
-                @enum.peek
-              rescue StopIteration
-                break
-              end
+        @enum.peek
+      rescue StopIteration
+        break
+      end
       text_h = text_to_h(entry)
       current_left ||= text_h[:left]
       break if text_h[:left] < current_left ||
@@ -194,7 +195,6 @@ class PdfPage
   # Returns a hash of column heading to merged text_h entry
   # @return[Hash<Hash>] hash of column heading to merged text_h entry
   def process_data_row(row_a)
-
     raise "INTERNAL ERROR: row_a is not an array! #{row_a.inspect}" unless row_a.is_a? Array
 
     result = {}
