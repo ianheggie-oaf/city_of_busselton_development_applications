@@ -43,7 +43,9 @@ class Scraper
         puts "Processing page# #{page_no}"
         pdf_page = PdfPage.new(page_entry, previous_table_headings)
         if pdf_page.lodged_upto_date < earliest_date_of_interest
-          puts "NOTE: Ignoring rest of document since #{pdf_page.lodged_upto_date} in page heading is <= 30 days ago (#{earliest_date_of_interest})"
+          if ENV['DEBUG']
+            puts "NOTE: Ignoring rest of document since #{pdf_page.lodged_upto_date} in page heading is <= 30 days ago (#{earliest_date_of_interest})"
+          end
           return count
         end
         pdf_page.table_data do |data|
@@ -119,9 +121,10 @@ class Scraper
   end
 
   def save(record)
-    puts "Saving #{record["council_reference"]} - #{record["address"]}, desc: #{record["description"]}, received: #{record["date_received"]}"
+    fix_record(record)
+    puts "Saving #{record["council_reference"]} - #{record["address"]}"
     ScraperWiki.save_sqlite(["council_reference"], record)
-    puts "SAVED RECORD: #{record.inspect}" if ENV["DEBUG"]
+    puts "SAVED RECORD: #{record.to_yaml}" if ENV["DEBUG"]
   end
 
 end

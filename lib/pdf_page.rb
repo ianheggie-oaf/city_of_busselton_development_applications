@@ -122,7 +122,7 @@ class PdfPage
     row_a.each do |entry|
       merge_heading(entry)
     end
-    if previous_table_headings != table_headings
+    if previous_table_headings != table_headings && ENV['DEBUG']
       puts "Found table headings at these #{previous_table_headings ? 'changed ' : ''}positions:"
       table_headings.each do |heading|
         puts format("  %4d  %s", heading[:left], heading[:text])
