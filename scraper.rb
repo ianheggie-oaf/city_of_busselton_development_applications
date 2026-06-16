@@ -84,7 +84,7 @@ class Scraper
 
             puts "Appending continuation to previous_record..."
             record.each do |key, value|
-              if key.start_with?("date_")
+              if key.start_with?("date_") || key == "info_url" || previous_record[key] == value
                 previous_record[key] = value if value.to_s != ""
               else
                 previous_record[key] = "#{previous_record[key]} #{value}".strip
